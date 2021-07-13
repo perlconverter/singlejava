@@ -42,7 +42,7 @@ def tokenize_json_helper(inpt):
     return content_tokenized, path
 
 
-@timeout(3600)
+#@timeout(3600)
 def output_all_tokenized_results(docs, f_tok):
     pool = Pool(cpu_count())
     result_content_tokenized = tqdm.tqdm(pool.imap_unordered(
@@ -70,18 +70,22 @@ def process_and_tokenize_json_file(input_path, language, keep_comments):
     paths = []
     for line in fileinput.input(str(input_path), openhook=fileinput.hook_compressed):
         x = json.loads(line)
-        content = x['content']
-        path = f"{x['repo_name']}/tree/master/{x['path']}"
-        docs.append((tokenizer, content, path, keep_comments))
-
+        try:
+            content = x['content']
+            path = f"{x['repo_name']}/tree/master/{x['path']}"
+            docs.append((tokenizer, content, path, keep_comments))
+        except:
+            {}
     f_tok = open(output_path, 'w', encoding='utf-8')
     try:
         output_all_tokenized_results(docs, f_tok)
-    except TimeoutError:
+    except:
+        {}
+    #except TimeoutError:
         # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
-        f_tok.close()
-        print('Program closed automatically after one hour')
-        os._exit(0)
+        #f_tok.close()
+        #print('Program closed automatically after one hour')
+        #os._exit(0)
 
 
 def extract_functions_file(input_path, language, test_size=None):
